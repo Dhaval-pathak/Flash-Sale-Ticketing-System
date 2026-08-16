@@ -124,32 +124,72 @@ COMMIT;
 
 ## Local Setup
 
-1. Start services:
+This project is configured for the simplest local developer workflow:
+
+- PostgreSQL and Redis run in Docker
+- The API and worker run locally on your laptop
+- No rebuild is required for normal code edits in `api/` or `worker/`
+
+### 1. Start only the infrastructure containers
 
 ```powershell
-docker compose up -d --build
+docker compose up -d postgres redis
 ```
 
-2. Verify seed data:
+### 2. Install dependencies and start the API locally
+
+```powershell
+cd api
+npm install
+npm run dev
+```
+
+### 3. Install dependencies and start the worker locally
+
+```powershell
+cd worker
+npm install
+node index.js
+```
+
+### 4. Verify the database is ready
 
 ```powershell
 docker compose exec postgres psql -U postgres -d ticketing -c "SELECT * FROM event_inventory_view;"
 ```
 
-3. Check API:
+### 5. Check the app endpoints
 
 - `http://localhost:3000/health`
 - `http://localhost:3000/api/events`
 
-4. Watch worker logs:
+### 6. Run the UI locally
 
 ```powershell
-docker compose logs -f worker
+cd ui
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+streamlit run app.py
 ```
+
+Then open:
+
+- `http://localhost:8501`
+
+## When you need a rebuild
+
+Run `docker compose up -d --build` only when you change:
+
+- `Dockerfile` files
+- dependency files such as `package.json` or `requirements.txt`
+- container setup in `docker-compose.yml`
+
+Regular source-code edits in `api/`, `worker/`, or `ui/` do not require rebuilding Docker.
 
 ## Notes
 
 - Keep real secrets in local `.env` only.
 - Commit `.env.example`, not `.env`.
-- PostgreSQL remains source of truth even if Redis/Kafka are unavailable.
+- PostgreSQL remains the source of truth even if Redis/Kafka are unavailable.
 
