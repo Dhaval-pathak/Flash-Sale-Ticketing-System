@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon --watch src --exec node src/index.js",
+    "test": "node --test test/flash-sale.test.js",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
     "prisma:generate": "prisma generate"

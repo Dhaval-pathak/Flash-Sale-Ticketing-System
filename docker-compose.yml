@@ -70,9 +70,10 @@ services:
     environment:
       API_URL: http://api:3000
     ports:
-      - "${STREAMLIT_PORT:-8501}:8501"
+      - "${UI_PORT:-8501}:8501"
     volumes:
       - ./ui:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - api
 
