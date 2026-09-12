@@ -1,0 +1,12 @@
+{
+  "name": "flash-sale-worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "pg": "^8.11.0"
+  }
+}
