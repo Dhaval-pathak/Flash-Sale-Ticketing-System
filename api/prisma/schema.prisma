@@ -1,0 +1,108 @@
+// api/prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id
+  email        String        @unique
+  name         String
+  isBlocked    Boolean       @default(false) @map("is_blocked")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  reservations Reservation[]
+  orders       Order[]
+
+  @@map("users")
+}
+
+model Event {
+  id                String            @id
+  slug              String            @unique
+  title             String
+  description       String?
+  venue             String?
+  startsAt          DateTime          @map("starts_at")
+  endsAt            DateTime          @map("ends_at")
+  saleStartsAt      DateTime          @map("sale_starts_at")
+  saleEndsAt        DateTime          @map("sale_ends_at")
+  status            String            @default("ACTIVE")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  ticketInventories TicketInventory[]
+  reservations      Reservation[]
+  orders            Order[]
+
+  @@map("events")
+}
+
+model TicketInventory {
+  id                String   @id
+  eventId           String   @map("event_id")
+  ticketType        String   @map("ticket_type")
+  totalCapacity     Int      @map("total_capacity")
+  remainingCapacity Int      @map("remaining_capacity")
+  price             Decimal  @db.Decimal(10, 2)
+  version           Int      @default(0)
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, ticketType])
+  @@map("ticket_inventory")
+}
+
+model Reservation {
+  id               String    @id
+  userId           String    @map("user_id")
+  eventId          String    @map("event_id")
+  ticketType       String    @map("ticket_type")
+  quantity         Int
+  status           String    @default("PENDING")
+  expiresAt        DateTime  @map("expires_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  paidAt           DateTime? @map("paid_at")
+  paymentReference String?   @map("payment_reference")
+  idempotencyKey   String?   @unique @map("idempotency_key")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  order Order?
+
+  @@index([status, expiresAt], name: "idx_reservations_status_expires")
+  @@map("reservations")
+}
+
+model Order {
+  id            String   @id
+  reservationId String   @unique @map("reservation_id")
+  userId        String   @map("user_id")
+  eventId       String   @map("event_id")
+  ticketType    String   @map("ticket_type")
+  quantity      Int
+  amount        Decimal  @db.Decimal(10, 2)
+  status        String   @default("PAID")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+model OutboxEvent {
+  id            String    @id
+  aggregateType String    @map("aggregate_type")
+  aggregateId   String    @map("aggregate_id")
+  eventType     String    @map("event_type")
+  payload       Json
+  createdAt     DateTime  @default(now()) @map("created_at")
+  publishedAt   DateTime? @map("published_at")
+
+  @@index([publishedAt], name: "idx_outbox_events_published")
+  @@map("outbox_events")
+}

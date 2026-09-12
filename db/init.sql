@@ -51,8 +51,13 @@ CREATE TABLE IF NOT EXISTS reservations (
   expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   paid_at TIMESTAMPTZ,
-  payment_reference VARCHAR(255)
+  payment_reference VARCHAR(255),
+  idempotency_key VARCHAR(255) UNIQUE
 );
+
+-- indexes for fast expiration polling and outbox relay
+CREATE INDEX IF NOT EXISTS idx_reservations_status_expires ON reservations (status, expires_at);
+CREATE INDEX IF NOT EXISTS idx_outbox_events_published ON outbox_events (published_at);
 
 -- orders
 CREATE TABLE IF NOT EXISTS orders (
