@@ -5,6 +5,12 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database with Prisma...');
 
+  // 0. Clean transient transactional data so full inventory starts with zero conflicting holds
+  await prisma.order.deleteMany();
+  await prisma.reservation.deleteMany();
+  await prisma.outboxEvent.deleteMany();
+  console.log('✓ Cleaned previous orders, reservations, and outbox events');
+
   // 1. Seed Users with friendly IDs
   const users = [
     { id: 'usr_alice', email: 'alice@example.com', name: 'Alice Demo', isBlocked: false },
@@ -97,7 +103,8 @@ async function main() {
     CREATE OR REPLACE VIEW event_inventory_view AS
     SELECT e.id AS event_id, e.title, ti.ticket_type, ti.total_capacity, ti.remaining_capacity, ti.price
     FROM events e
-    JOIN ticket_inventory ti ON ti.event_id = e.id;
+    JOIN ticket_inventory ti ON ti.event_id = e.id
+    ORDER BY e.id ASC, ti.price DESC;
   `);
   console.log('✓ Verified event_inventory_view');
 
