@@ -9,7 +9,7 @@ generator client {
 }
 
 model User {
-  id           String        @id
+  id           String        @id @db.Uuid
   email        String        @unique
   name         String
   isBlocked    Boolean       @default(false) @map("is_blocked")
@@ -21,7 +21,7 @@ model User {
 }
 
 model Event {
-  id                String            @id
+  id                String            @id @db.Uuid
   slug              String            @unique
   title             String
   description       String?
@@ -30,7 +30,7 @@ model Event {
   endsAt            DateTime          @map("ends_at")
   saleStartsAt      DateTime          @map("sale_starts_at")
   saleEndsAt        DateTime          @map("sale_ends_at")
-  status            String            @default("ACTIVE")
+  status            String            @default("DRAFT")
   createdAt         DateTime          @default(now()) @map("created_at")
   ticketInventories TicketInventory[]
   reservations      Reservation[]
@@ -40,8 +40,8 @@ model Event {
 }
 
 model TicketInventory {
-  id                String   @id
-  eventId           String   @map("event_id")
+  id                String   @id @db.Uuid
+  eventId           String   @db.Uuid @map("event_id")
   ticketType        String   @map("ticket_type")
   totalCapacity     Int      @map("total_capacity")
   remainingCapacity Int      @map("remaining_capacity")
@@ -56,11 +56,12 @@ model TicketInventory {
 }
 
 model Reservation {
-  id               String    @id
-  userId           String    @map("user_id")
-  eventId          String    @map("event_id")
+  id               String    @id @db.Uuid
+  userId           String    @db.Uuid @map("user_id")
+  eventId          String    @db.Uuid @map("event_id")
   ticketType       String    @map("ticket_type")
   quantity         Int
+  unitPrice        Decimal   @db.Decimal(10, 2) @map("unit_price")
   status           String    @default("PENDING")
   expiresAt        DateTime  @map("expires_at")
   createdAt        DateTime  @default(now()) @map("created_at")
@@ -77,10 +78,10 @@ model Reservation {
 }
 
 model Order {
-  id            String   @id
-  reservationId String   @unique @map("reservation_id")
-  userId        String   @map("user_id")
-  eventId       String   @map("event_id")
+  id            String   @id @db.Uuid
+  reservationId String   @unique @db.Uuid @map("reservation_id")
+  userId        String   @db.Uuid @map("user_id")
+  eventId       String   @db.Uuid @map("event_id")
   ticketType    String   @map("ticket_type")
   quantity      Int
   amount        Decimal  @db.Decimal(10, 2)
@@ -95,9 +96,9 @@ model Order {
 }
 
 model OutboxEvent {
-  id            String    @id
+  id            String    @id @db.Uuid
   aggregateType String    @map("aggregate_type")
-  aggregateId   String    @map("aggregate_id")
+  aggregateId   String    @db.Uuid @map("aggregate_id")
   eventType     String    @map("event_type")
   payload       Json
   createdAt     DateTime  @default(now()) @map("created_at")

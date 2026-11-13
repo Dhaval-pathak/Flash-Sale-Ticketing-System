@@ -14,7 +14,7 @@
     "dev:api": "cd api && npm run dev",
     "dev:ui": "cd ui && npm run dev",
     "dev:worker": "cd worker && npm run start",
-    "db:init": "PGPASSWORD=postgres psql -h localhost -U postgres -d ticketing -f db/init.sql",
+    "db:init": "PGPASSWORD=1234 psql -h localhost -U dhaval_test -d ticketing -f db/init.sql 2>/dev/null || PGPASSWORD=postgres psql -h localhost -U postgres -d ticketing -f db/init.sql",
     "db:seed": "cd api && npm run db:seed",
     "db:studio": "cd api && npx prisma studio",
     "prod:up": "docker compose up --build",

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
 import { expireReservations } from '../api/src/services/ticketingService.ts';
+import { logSync } from '../api/src/utils/logger.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,7 +13,7 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 export const pool = new Pool({
   connectionString:
     process.env.DATABASE_URL ||
-    `postgresql://${process.env.POSTGRES_USER || 'postgres'}:${process.env.POSTGRES_PASSWORD || 'postgres'}@${
+    `postgresql://${process.env.POSTGRES_USER || 'dhaval_test'}:${process.env.POSTGRES_PASSWORD || '1234'}@${
       process.env.POSTGRES_HOST || 'localhost'
     }:${process.env.POSTGRES_PORT || 5432}/${process.env.POSTGRES_DB || 'ticketing'}`
 });
@@ -30,7 +31,7 @@ export async function runSweep(): Promise<void> {
   try {
     const expiredCount = await expireReservations(pool, 100);
     if (expiredCount > 0) {
-      console.log(`expired ${expiredCount} reservations`);
+      logSync(`Swept expired reservations: ${expiredCount} restored to inventory`);
     }
   } catch (error) {
     console.error('error expiring reservations; the next interval will retry', error);
@@ -56,7 +57,7 @@ export async function shutdown(): Promise<void> {
  */
 export function start(): void {
   const intervalMs = Number(process.env.WORKER_INTERVAL_MS) || 1000;
-  console.log(`Worker started, sweeping expired reservations every ${intervalMs}ms`);
+  logSync(`Worker started, sweeping expired reservations every ${intervalMs}ms`);
   timer = setInterval(runSweep, intervalMs);
 
   process.on('SIGINT', () => shutdown().then(() => process.exit(0)));

@@ -13,4 +13,4 @@ RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db push && node prisma/seed.js && npm start"]
+CMD ["npm", "start"]
