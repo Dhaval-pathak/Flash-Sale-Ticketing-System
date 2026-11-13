@@ -11,6 +11,7 @@
   "scripts": {
     "install:all": "npm install",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "benchmark": "node --experimental-strip-types tests/benchmarks/flashSale100k.ts",
     "dev:api": "cd api && npm run dev",
     "dev:ui": "cd ui && npm run dev",
     "dev:worker": "cd worker && npm run start",
