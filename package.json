@@ -1,0 +1,23 @@
+{
+  "name": "flash-sale-ticketing-system",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "api",
+    "ui",
+    "worker"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "dev:api": "cd api && npm run dev",
+    "dev:ui": "cd ui && npm run dev",
+    "dev:worker": "cd worker && npm run start",
+    "db:init": "PGPASSWORD=postgres psql -h localhost -U postgres -d ticketing -f db/init.sql",
+    "db:seed": "cd api && npm run db:seed",
+    "db:studio": "cd api && npx prisma studio",
+    "prod:up": "docker compose up --build",
+    "prod:down": "docker compose down"
+  }
+}
